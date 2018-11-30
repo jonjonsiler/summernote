@@ -5,7 +5,7 @@
  * Copyright 2013- Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license.
  *
- * Date: 2018-11-24T12:13Z
+ * Date: 2018-11-30T20:49Z
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('jquery')) :
@@ -84,12 +84,12 @@
       '    <div class="note-icon-bar"/>',
       '    <div class="note-icon-bar"/>',
       '  </div>',
-      '</div>'
+      '</div>',
   ].join(''));
   var airEditor = renderer.create('<div class="note-editor"/>');
   var airEditable = renderer.create([
       '<div class="note-editable" contentEditable="true" role="textbox" aria-multiline="true"/>',
-      '<output class="note-status-output" aria-live="polite"/>'
+      '<output class="note-status-output" aria-live="polite"/>',
   ].join(''));
   var buttonGroup = renderer.create('<div class="note-btn-group btn-group">');
   var dropdown = renderer.create('<div class="dropdown-menu" role="list">', function ($node, options) {
@@ -131,7 +131,7 @@
                   'data-value="', color, '" ',
                   'title="', colorName, '" ',
                   'aria-label="', colorName, '" ',
-                  'data-toggle="button" tabindex="-1"></button>'
+                  'data-toggle="button" tabindex="-1"></button>',
               ].join(''));
           }
           contents.push('<div class="note-color-row">' + buttons.join('') + '</div>');
@@ -164,14 +164,14 @@
           (options.footer
               ? '    <div class="modal-footer">' + options.footer + '</div>' : ''),
           '  </div>',
-          '</div>'
+          '</div>',
       ].join(''));
   });
   var popover = renderer.create([
       '<div class="note-popover popover in">',
       '  <div class="arrow"/>',
       '  <div class="popover-content note-children-container"/>',
-      '</div>'
+      '</div>',
   ].join(''), function ($node, options) {
       var direction = typeof options.direction !== 'undefined' ? options.direction : 'bottom';
       $node.addClass(direction);
@@ -186,7 +186,7 @@
           (options.checked ? ' checked' : ''),
           ' aria-label="' + (options.text ? options.text : '') + '"',
           ' aria-checked="' + (options.checked ? 'true' : 'false') + '"/>',
-          ' ' + (options.text ? options.text : '') + '</label>'
+          ' ' + (options.text ? options.text : '') + '</label>',
       ].join(''));
   });
   var icon = function (iconClassName, tagName) {
@@ -248,15 +248,15 @@
       createLayout: function ($note, options) {
           var $editor = (options.airMode ? ui.airEditor([
               ui.editingArea([
-                  ui.airEditable()
-              ])
+                  ui.airEditable(),
+              ]),
           ]) : ui.editor([
               ui.toolbar(),
               ui.editingArea([
                   ui.codable(),
-                  ui.editable()
+                  ui.editable(),
               ]),
-              ui.statusbar()
+              ui.statusbar(),
           ])).render();
           $editor.insertAfter($note);
           return {
@@ -407,6 +407,15 @@
           }
       };
   }
+  /**
+   *
+   * @param {String} url
+   * @return {Boolean}
+   */
+  function isValidUrl(url) {
+      var expression = /[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi;
+      return expression.test(url);
+  }
   var func = {
       eq: eq,
       eq2: eq2,
@@ -421,7 +430,8 @@
       rect2bnd: rect2bnd,
       invertObject: invertObject,
       namespaceToCamel: namespaceToCamel,
-      debounce: debounce
+      debounce: debounce,
+      isValidUrl: isValidUrl
   };
 
   /**
@@ -630,15 +640,14 @@
    */
   function isFontInstalled(fontName) {
       var testFontName = fontName === 'Comic Sans MS' ? 'Courier New' : 'Comic Sans MS';
-      var $tester = $$1('<div>').css({
-          position: 'absolute',
-          left: '-9999px',
-          top: '-9999px',
-          fontSize: '200px'
-      }).text('mmmmmmmmmwwwwwww').appendTo(document.body);
-      var originalWidth = $tester.css('fontFamily', testFontName).width();
-      var width = $tester.css('fontFamily', fontName + ',' + testFontName).width();
-      $tester.remove();
+      var testText = 'mmmmmmmmmmwwwww';
+      var testSize = '200px';
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+      context.font = testSize + " '" + testFontName + "'";
+      var originalWidth = context.measureText(testText).width;
+      context.font = testSize + " '" + fontName + "', '" + testFontName + "'";
+      var width = context.measureText(testText).width;
       return originalWidth !== width;
   }
   var userAgent = navigator.userAgent;
@@ -723,6 +732,8 @@
 
   var NBSP_CHAR = String.fromCharCode(160);
   var ZERO_WIDTH_NBSP_CHAR = '\ufeff';
+  var TABS_CONTAINER_CLASS = 'tabs-container';
+  var ACCORDION_CONTAINER_CLASS = 'accordion-container';
   /**
    * @method isEditable
    *
@@ -786,7 +797,7 @@
    * @see http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
    */
   function isVoid(node) {
-      return node && /^BR|^IMG|^HR|^IFRAME|^BUTTON|^INPUT|^VIDEO|^EMBED/.test(node.nodeName.toUpperCase());
+      return node && /^BR|^IMG|^HR|^IFRAME|^BUTTON|^INPUT|^AUDIO|^VIDEO|^EMBED/.test(node.nodeName.toUpperCase());
   }
   function isPara(node) {
       if (isEditable(node)) {
@@ -833,6 +844,13 @@
       return isInline(node) && !ancestor(node, isPara);
   }
   var isBody = makePredByNodeName('BODY');
+  var isButton = makePredByNodeName('BUTTON');
+  function isTab(node) {
+      return isAnchor && node.parents('.' + TABS_CONTAINER_CLASS);
+  }
+  function isAccordion(node) {
+      return isButton && node.parents('.' + ACCORDION_CONTAINER_CLASS);
+  }
   /**
    * returns whether nodeB is closest sibling of nodeA
    *
@@ -1658,6 +1676,9 @@
       isBlockquote: isBlockquote,
       isBodyContainer: isBodyContainer,
       isAnchor: isAnchor,
+      isButton: isButton,
+      isTab: isTab,
+      isAccordion: isAccordion,
       isDiv: makePredByNodeName('DIV'),
       isLi: isLi,
       isBR: makePredByNodeName('BR'),
@@ -1832,6 +1853,12 @@
           this.isOnCell = this.makeIsOn(dom.isCell);
           // isOnData: judge whether range is on data node or not
           this.isOnData = this.makeIsOn(dom.isData);
+          // isOnButton: judge whether range is on a button node or not
+          this.isOnButton = this.makeIsOn(dom.isButton);
+          // isOnAccordion: judge whether range is on a bootstrap accordion node or not
+          this.isOnAccordion = this.makeIsOn(dom.isAccordion);
+          // isOnTab: judge whether range is on a bootstrap tab node or not
+          this.isOnTab = this.makeIsOn(dom.isTab);
       }
       // nativeRange: get nativeRange from sc, so, ec, eo
       WrappedRange.prototype.nativeRange = function () {
@@ -2620,7 +2647,7 @@
               KEY_MAP.TAB,
               KEY_MAP.ENTER,
               KEY_MAP.SPACE,
-              KEY_MAP.DELETE
+              KEY_MAP.DELETE,
           ], keyCode);
       },
       /**
@@ -2634,7 +2661,7 @@
               KEY_MAP.LEFT,
               KEY_MAP.UP,
               KEY_MAP.RIGHT,
-              KEY_MAP.DOWN
+              KEY_MAP.DOWN,
           ], keyCode);
       },
       /**
@@ -3874,7 +3901,7 @@
           var commands = [
               'bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript',
               'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
-              'formatBlock', 'removeFormat', 'backColor'
+              'formatBlock', 'removeFormat', 'backColor',
           ];
           for (var idx = 0, len = commands.length; idx < len; idx++) {
               this[commands[idx]] = (function (sCmd) {
@@ -3924,9 +3951,10 @@
               if (_this.isLimited($$1(node).text().length)) {
                   return;
               }
-              var rng = _this.createRange();
+              var rng = _this.getLastRange();
               rng.insertNode(node);
               range.createFromNodeAfter(node).select();
+              _this.setLastRange();
           });
           /**
            * insert text
@@ -3936,9 +3964,10 @@
               if (_this.isLimited(text.length)) {
                   return;
               }
-              var rng = _this.createRange();
+              var rng = _this.getLastRange();
               var textNode = rng.insertNode(dom.createText(text));
               range.create(textNode, dom.nodeLength(textNode)).select();
+              _this.setLastRange();
           });
           /**
            * paste HTML
@@ -3948,8 +3977,9 @@
               if (_this.isLimited(markup.length)) {
                   return;
               }
-              var contents = _this.createRange().pasteHTML(markup);
+              var contents = _this.getLastRange().pasteHTML(markup);
               range.createFromNodeAfter(lists.last(contents)).select();
+              _this.setLastRange();
           });
           /**
            * formatBlock
@@ -3969,9 +3999,10 @@
            * insert horizontal rule
            */
           this.insertHorizontalRule = this.wrapCommand(function () {
-              var hrNode = _this.createRange().insertNode(dom.create('HR'));
+              var hrNode = _this.getLastRange().insertNode(dom.create('HR'));
               if (hrNode.nextSibling) {
                   range.create(hrNode.nextSibling, 0).normalize().select();
+                  _this.setLastRange();
               }
           });
           /**
@@ -3979,7 +4010,7 @@
            * @param {String} value
            */
           this.lineHeight = this.wrapCommand(function (value) {
-              _this.style.stylePara(_this.createRange(), {
+              _this.style.stylePara(_this.getLastRange(), {
                   lineHeight: value
               });
           });
@@ -3992,7 +4023,7 @@
               var linkUrl = linkInfo.url;
               var linkText = linkInfo.text;
               var isNewWindow = linkInfo.isNewWindow;
-              var rng = linkInfo.range || _this.createRange();
+              var rng = linkInfo.range || _this.getLastRange();
               var additionalTextLength = linkText.length - rng.toString().length;
               if (additionalTextLength > 0 && _this.isLimited(additionalTextLength)) {
                   return;
@@ -4006,12 +4037,9 @@
                   linkUrl = _this.options.onCreateLink(linkUrl);
               }
               else {
-                  // if url is not relative,
-                  if (!/^\.?\/(.*)/.test(linkUrl)) {
-                      // if url doesn't match an URL schema, set http:// as default
-                      linkUrl = /^[A-Za-z][A-Za-z0-9+-.]*\:[\/\/]?/.test(linkUrl)
-                          ? linkUrl : 'http://' + linkUrl;
-                  }
+                  // if url doesn't have any protocol and not even a relative or a label, use http:// as default
+                  linkUrl = /^([A-Za-z][A-Za-z0-9+-.]*\:|#|\/)/.test(linkUrl)
+                      ? linkUrl : 'http://' + linkUrl;
               }
               var anchors = [];
               if (isTextChanged) {
@@ -4040,6 +4068,7 @@
               var endRange = range.createFromNodeAfter(lists.last(anchors));
               var endPoint = endRange.getEndPoint();
               range.create(startPoint.node, startPoint.offset, endPoint.node, endPoint.offset).select();
+              _this.setLastRange();
           });
           /**
            * setting color
@@ -4074,7 +4103,7 @@
            */
           this.insertTable = this.wrapCommand(function (dim) {
               var dimension = dim.split('x');
-              var rng = _this.createRange().deleteContents();
+              var rng = _this.getLastRange().deleteContents();
               rng.insertNode(_this.table.createTable(dimension[0], dimension[1], _this.options));
           });
           /**
@@ -4133,18 +4162,22 @@
                   return false;
               }
           }).on('keyup', function (event) {
+              _this.setLastRange();
               _this.context.triggerEvent('keyup', event);
           }).on('focus', function (event) {
+              _this.setLastRange();
               _this.context.triggerEvent('focus', event);
           }).on('blur', function (event) {
               _this.context.triggerEvent('blur', event);
           }).on('mousedown', function (event) {
               _this.context.triggerEvent('mousedown', event);
           }).on('mouseup', function (event) {
+              _this.setLastRange();
               _this.context.triggerEvent('mouseup', event);
           }).on('scroll', function (event) {
               _this.context.triggerEvent('scroll', event);
           }).on('paste', function (event) {
+              _this.setLastRange();
               _this.context.triggerEvent('paste', event);
           });
           // init content before set event
@@ -4172,6 +4205,7 @@
               }
           }
           this.history.recordUndo();
+          this.setLastRange();
       };
       Editor.prototype.destroy = function () {
           this.$editable.off();
@@ -4231,7 +4265,17 @@
        */
       Editor.prototype.createRange = function () {
           this.focus();
-          return range.create(this.editable);
+          this.setLastRange();
+          return this.getLastRange();
+      };
+      Editor.prototype.setLastRange = function () {
+          this.lastRange = range.create(this.editable);
+      };
+      Editor.prototype.getLastRange = function () {
+          if (!this.lastRange) {
+              this.setLastRange();
+          }
+          return this.lastRange;
       };
       /**
        * saveRange
@@ -4241,9 +4285,8 @@
        * @param {Boolean} [thenCollapse=false]
        */
       Editor.prototype.saveRange = function (thenCollapse) {
-          this.lastRange = this.createRange();
           if (thenCollapse) {
-              this.lastRange.collapse().select();
+              this.getLastRange().collapse().select();
           }
       };
       /**
@@ -4335,7 +4378,7 @@
        * handle tab key
        */
       Editor.prototype.tab = function () {
-          var rng = this.createRange();
+          var rng = this.getLastRange();
           if (rng.isCollapsed() && rng.isOnCell()) {
               this.table.tab(rng);
           }
@@ -4354,7 +4397,7 @@
        * handle shift+tab key
        */
       Editor.prototype.untab = function () {
-          var rng = this.createRange();
+          var rng = this.getLastRange();
           if (rng.isCollapsed() && rng.isOnCell()) {
               this.table.tab(rng, true);
           }
@@ -4397,6 +4440,7 @@
               $image.show();
               range.create(_this.editable).insertNode($image[0]);
               range.createFromNodeAfter($image[0]).select();
+              _this.setLastRange();
               _this.afterCommand();
           }).fail(function (e) {
               _this.context.triggerEvent('image.upload.error', e);
@@ -4427,7 +4471,7 @@
        * @return {String} text
        */
       Editor.prototype.getSelectedText = function () {
-          var rng = this.createRange();
+          var rng = this.getLastRange();
           // if range on anchor, expand range with anchor
           if (rng.isOnAnchor()) {
               rng = range.createFromNode(dom.ancestor(rng.sc, dom.isAnchor));
@@ -4452,7 +4496,7 @@
           this.formatBlock('P');
       };
       Editor.prototype.fontStyling = function (target, value) {
-          var rng = this.createRange();
+          var rng = this.getLastRange();
           if (rng) {
               var spans = this.style.styleNodes(rng);
               $$1(spans).css(target, value);
@@ -4463,6 +4507,7 @@
                   if (firstSpan && !dom.nodeLength(firstSpan)) {
                       firstSpan.innerHTML = dom.ZERO_WIDTH_NBSP_CHAR;
                       range.createFromNodeAfter(firstSpan.firstChild).select();
+                      this.setLastRange();
                       this.$editable.data(KEY_BOGUS, firstSpan);
                   }
               }
@@ -4474,11 +4519,12 @@
        * @type command
        */
       Editor.prototype.unlink = function () {
-          var rng = this.createRange();
+          var rng = this.getLastRange();
           if (rng.isOnAnchor()) {
               var anchor = dom.ancestor(rng.sc, dom.isAnchor);
               rng = range.createFromNode(anchor);
               rng.select();
+              this.setLastRange();
               this.beforeCommand();
               document.execCommand('unlink');
               this.afterCommand();
@@ -4494,7 +4540,7 @@
        * @return {String} [return.url=""]
        */
       Editor.prototype.getLinkInfo = function () {
-          var rng = this.createRange().expand(dom.isAnchor);
+          var rng = this.getLastRange().expand(dom.isAnchor);
           // Get the first anchor on range(for edit).
           var $anchor = $$1(lists.head(rng.nodes(dom.isAnchor)));
           var linkInfo = {
@@ -4510,7 +4556,7 @@
           return linkInfo;
       };
       Editor.prototype.addRow = function (position) {
-          var rng = this.createRange(this.$editable);
+          var rng = this.getLastRange(this.$editable);
           if (rng.isCollapsed() && rng.isOnCell()) {
               this.beforeCommand();
               this.table.addRow(rng, position);
@@ -4518,7 +4564,7 @@
           }
       };
       Editor.prototype.addCol = function (position) {
-          var rng = this.createRange(this.$editable);
+          var rng = this.getLastRange(this.$editable);
           if (rng.isCollapsed() && rng.isOnCell()) {
               this.beforeCommand();
               this.table.addCol(rng, position);
@@ -4526,7 +4572,7 @@
           }
       };
       Editor.prototype.deleteRow = function () {
-          var rng = this.createRange(this.$editable);
+          var rng = this.getLastRange(this.$editable);
           if (rng.isCollapsed() && rng.isOnCell()) {
               this.beforeCommand();
               this.table.deleteRow(rng);
@@ -4534,7 +4580,7 @@
           }
       };
       Editor.prototype.deleteCol = function () {
-          var rng = this.createRange(this.$editable);
+          var rng = this.getLastRange(this.$editable);
           if (rng.isCollapsed() && rng.isOnCell()) {
               this.beforeCommand();
               this.table.deleteCol(rng);
@@ -4542,7 +4588,7 @@
           }
       };
       Editor.prototype.deleteTable = function () {
-          var rng = this.createRange(this.$editable);
+          var rng = this.getLastRange(this.$editable);
           if (rng.isCollapsed() && rng.isOnCell()) {
               this.beforeCommand();
               this.table.deleteTable(rng);
@@ -4649,7 +4695,7 @@
           this.$dropzone = $$1([
               '<div class="note-dropzone">',
               '  <div class="note-dropzone-message"/>',
-              '</div>'
+              '</div>',
           ].join('')).prependTo(this.$editor);
       }
       /**
@@ -4977,7 +5023,7 @@
               ' note-control-se"></div>',
               (this.options.disableResizeImage ? '' : '<div class="note-control-selection-info"></div>'),
               '</div>',
-              '</div>'
+              '</div>',
           ].join('')).prependTo(this.$editingArea);
           this.$handle.on('mousedown', function (event) {
               if (dom.isControlSizing(event.target)) {
@@ -5136,6 +5182,80 @@
       return AutoSync;
   }());
 
+  var AutoReplace = /** @class */ (function () {
+      function AutoReplace(context) {
+          var _this = this;
+          this.context = context;
+          this.options = context.options.replace || {};
+          this.keys = [key.code.ENTER, key.code.SPACE, key.code.PERIOD, key.code.COMMA, key.code.SEMICOLON, key.code.SLASH];
+          this.previousKeydownCode = null;
+          this.events = {
+              'summernote.keyup': function (we, e) {
+                  if (!e.isDefaultPrevented()) {
+                      _this.handleKeyup(e);
+                  }
+              },
+              'summernote.keydown': function (we, e) {
+                  _this.handleKeydown(e);
+              }
+          };
+      }
+      AutoReplace.prototype.shouldInitialize = function () {
+          return !!this.options.match;
+      };
+      AutoReplace.prototype.initialize = function () {
+          this.lastWord = null;
+      };
+      AutoReplace.prototype.destroy = function () {
+          this.lastWord = null;
+      };
+      AutoReplace.prototype.replace = function () {
+          if (!this.lastWord) {
+              return;
+          }
+          var self = this;
+          var keyword = this.lastWord.toString();
+          this.options.match(keyword, function (match) {
+              if (match) {
+                  var node = '';
+                  if (typeof match === 'string') {
+                      node = dom.createText(match);
+                  }
+                  else if (match instanceof jQuery) {
+                      node = match[0];
+                  }
+                  else if (match instanceof Node) {
+                      node = match;
+                  }
+                  if (!node)
+                      return;
+                  self.lastWord.insertNode(node);
+                  self.lastWord = null;
+                  self.context.invoke('editor.focus');
+              }
+          });
+      };
+      AutoReplace.prototype.handleKeydown = function (e) {
+          // this forces it to remember the last whole word, even if multiple termination keys are pressed
+          // before the previous key is let go.
+          if (this.previousKeydownCode && lists.contains(this.keys, this.previousKeydownCode)) {
+              this.previousKeydownCode = e.keyCode;
+              return;
+          }
+          if (lists.contains(this.keys, e.keyCode)) {
+              var wordRange = this.context.invoke('editor.createRange').getWordRange();
+              this.lastWord = wordRange;
+          }
+          this.previousKeydownCode = e.keyCode;
+      };
+      AutoReplace.prototype.handleKeyup = function (e) {
+          if (lists.contains(this.keys, e.keyCode)) {
+              this.replace();
+          }
+      };
+      return AutoReplace;
+  }());
+
   var Placeholder = /** @class */ (function () {
       function Placeholder(context) {
           var _this = this;
@@ -5255,10 +5375,14 @@
                       callback: function ($button) {
                           var $recentColor = $button.find('.note-recent-color');
                           if (backColor) {
-                              $recentColor.css('background-color', '#FFFF00');
-                              $button.attr('data-backColor', '#FFFF00');
+                              $recentColor.css('background-color', _this.options.colorButton.backColor);
+                              $button.attr('data-backColor', _this.options.colorButton.backColor);
                           }
-                          if (!foreColor) {
+                          if (foreColor) {
+                              $recentColor.css('color', _this.options.colorButton.foreColor);
+                              $button.attr('data-foreColor', _this.options.colorButton.foreColor);
+                          }
+                          else {
                               $recentColor.css('color', 'transparent');
                           }
                       }
@@ -5285,10 +5409,10 @@
                           '    <button type="button" class="note-color-select btn" data-event="openPalette" data-value="backColorPicker">',
                           this.lang.color.cpSelect,
                           '    </button>',
-                          '    <input type="color" id="backColorPicker" class="note-btn note-color-select-btn" value="#FFFF00" data-event="backColorPalette">',
+                          '    <input type="color" id="backColorPicker" class="note-btn note-color-select-btn" value="' + this.options.colorButton.backColor + '" data-event="backColorPalette">',
                           '  </div>',
                           '  <div class="note-holder-custom" id="backColorPalette" data-event="backColor"/>',
-                          '</div>'
+                          '</div>',
                       ].join('') : '') +
                           (foreColor ? [
                               '<div class="note-palette">',
@@ -5303,9 +5427,9 @@
                               '    <button type="button" class="note-color-select btn" data-event="openPalette" data-value="foreColorPicker">',
                               this.lang.color.cpSelect,
                               '    </button>',
-                              '    <input type="color" id="foreColorPicker" class="note-btn note-color-select-btn" value="#000000" data-event="foreColorPalette">',
+                              '    <input type="color" id="foreColorPicker" class="note-btn note-color-select-btn" value="' + this.options.colorButton.foreColor + '" data-event="foreColorPalette">',
                               '  <div class="note-holder-custom" id="foreColorPalette" data-event="foreColor"/>',
-                              '</div>'
+                              '</div>',
                           ].join('') : ''),
                       callback: function ($dropdown) {
                           $dropdown.find('.note-holder').each(function (idx, item) {
@@ -5320,7 +5444,7 @@
                           });
                           /* TODO: do we have to record recent custom colors within cookies? */
                           var customColors = [
-                              ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF']
+                              ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'],
                           ];
                           $dropdown.find('.note-holder-custom').each(function (idx, item) {
                               var $holder = $$1(item);
@@ -5373,7 +5497,7 @@
                               _this.context.invoke('editor.' + eventName, value);
                           }
                       }
-                  })
+                  }),
               ]
           }).render();
       };
@@ -5404,7 +5528,7 @@
                           return '<' + tag + style + className + '>' + title + '</' + tag + '>';
                       },
                       click: _this.context.createInvokeHandler('editor.formatBlock')
-                  })
+                  }),
               ]).render();
           });
           var _loop_1 = function (styleIdx, styleLen) {
@@ -5506,7 +5630,7 @@
                           return '<span style="font-family: \'' + item + '\'">' + item + '</span>';
                       },
                       click: _this.context.createInvokeHandlerAndUpdateState('editor.fontName')
-                  })
+                  }),
               ]).render();
           });
           this.context.memo('button.fontsize', function () {
@@ -5525,7 +5649,7 @@
                       items: _this.options.fontSizes,
                       title: _this.lang.font.size,
                       click: _this.context.createInvokeHandlerAndUpdateState('editor.fontSize')
-                  })
+                  }),
               ]).render();
           });
           this.context.memo('button.color', function () {
@@ -5605,8 +5729,8 @@
                       _this.ui.buttonGroup({
                           className: 'note-list',
                           children: [outdent, indent]
-                      })
-                  ])
+                      }),
+                  ]),
               ]).render();
           });
           this.context.memo('button.height', function () {
@@ -5625,7 +5749,7 @@
                       className: 'dropdown-line-height',
                       title: _this.lang.font.height,
                       click: _this.context.createInvokeHandler('editor.lineHeight')
-                  })
+                  }),
               ]).render();
           });
           this.context.memo('button.table', function () {
@@ -5647,9 +5771,9 @@
                           '  <div class="note-dimension-picker-highlighted"/>',
                           '  <div class="note-dimension-picker-unhighlighted"/>',
                           '</div>',
-                          '<div class="note-dimension-display">1 x 1</div>'
+                          '<div class="note-dimension-display">1 x 1</div>',
                       ].join('')
-                  })
+                  }),
               ], {
                   callback: function ($node) {
                       var $catcher = $node.find('.note-dimension-picker-mousecatcher');
@@ -5882,7 +6006,7 @@
               for (var idx = 0, len = buttons.length; idx < len; idx++) {
                   var btn = this.context.memo('button.' + buttons[idx]);
                   if (btn) {
-                      $group.append(typeof btn === 'function' ? btn(this.context) : btn);
+                      $group.append(typeof btn === 'function' ? btn() : btn);
                   }
               }
               $group.appendTo($container);
@@ -6139,7 +6263,7 @@
                       text: this.lang.link.openInNewWindow,
                       checked: true
                   }).render()).html()
-                  : ''
+                  : '',
           ].join('');
           var buttonClass = 'btn btn-primary note-btn note-btn-primary note-link-btn';
           var footer = "<input type=\"button\" href=\"#\" class=\"" + buttonClass + "\" value=\"" + this.lang.link.insert + "\" disabled>";
@@ -6185,8 +6309,8 @@
                   .find('.sn-checkbox-open-in-new-window input[type=checkbox]');
               _this.ui.onDialogShown(_this.$dialog, function () {
                   _this.context.triggerEvent('dialog.shown');
-                  // if no url was given, copy text to url
-                  if (!linkInfo.url) {
+                  // if no url was given and given text is valid URL then copy that into URL Field
+                  if (!linkInfo.url && func.isValidUrl(linkInfo.text)) {
                       linkInfo.url = linkInfo.text;
                   }
                   $linkText.val(linkInfo.text);
@@ -6297,8 +6421,8 @@
               this.hide();
               return;
           }
-          var rng = this.context.invoke('editor.createRange');
-          if (rng.isCollapsed() && rng.isOnAnchor()) {
+          var rng = this.context.invoke('editor.getLastRange');
+          if (rng.isCollapsed() && rng.isOnAnchor() && !rng.isOnTab()) {
               var anchor = dom.ancestor(rng.sc, dom.isAnchor);
               var href = $$1(anchor).attr('href');
               this.$popover.find('a').attr('href', href).html(href);
@@ -6348,7 +6472,7 @@
               '<label class="note-form-label">' + this.lang.image.url + '</label>',
               '<input class="note-image-url form-control note-form-control note-input ',
               ' col-md-12" type="text" />',
-              '</div>'
+              '</div>',
           ].join('');
           var buttonClass = 'btn btn-primary note-btn note-btn-primary note-image-btn';
           var footer = "<input type=\"button\" href=\"#\" class=\"" + buttonClass + "\" value=\"" + this.lang.image.insert + "\" disabled>";
@@ -6571,7 +6695,7 @@
               '<div class="form-group note-form-group row-fluid">',
               "<label class=\"note-form-label\">" + this.lang.video.url + " <small class=\"text-muted\">" + this.lang.video.providers + "</small></label>",
               '<input class="note-video-url form-control note-form-control note-input" type="text" />',
-              '</div>'
+              '</div>',
           ].join('');
           var buttonClass = 'btn btn-primary note-btn note-btn-primary note-video-btn';
           var footer = "<input type=\"button\" href=\"#\" class=\"" + buttonClass + "\" value=\"" + this.lang.video.insert + "\" disabled>";
@@ -6762,7 +6886,7 @@
               '<a href="http://summernote.org/" target="_blank">Summernote 0.8.11</a> · ',
               '<a href="https://github.com/summernote/summernote" target="_blank">Project</a> · ',
               '<a href="https://github.com/summernote/summernote/issues" target="_blank">Issues</a>',
-              '</p>'
+              '</p>',
           ].join('');
           this.$dialog = this.ui.dialog({
               title: this.lang.options.help,
@@ -7038,7 +7162,7 @@
       HintPopover.prototype.handleKeyup = function (e) {
           var _this = this;
           if (!lists.contains([key.code.ENTER, key.code.UP, key.code.DOWN], e.keyCode)) {
-              var wordRange = this.context.invoke('editor.createRange').getWordRange();
+              var wordRange = this.context.invoke('editor.getLastRange').getWordRange();
               var keyword_1 = wordRange.toString();
               if (this.hints.length && keyword_1) {
                   this.$content.empty();
@@ -7338,6 +7462,7 @@
               'hintPopover': HintPopover,
               'autoLink': AutoLink,
               'autoSync': AutoSync,
+              'autoReplace': AutoReplace,
               'placeholder': Placeholder,
               'buttons': Buttons,
               'toolbar': Toolbar,
@@ -7363,7 +7488,7 @@
               ['para', ['ul', 'ol', 'paragraph']],
               ['table', ['table']],
               ['insert', ['link', 'picture', 'video']],
-              ['view', ['fullscreen', 'codeview', 'help']]
+              ['view', ['fullscreen', 'codeview', 'help']],
           ],
           // popover
           popatmouse: true,
@@ -7371,21 +7496,21 @@
               image: [
                   ['imagesize', ['imageSize100', 'imageSize50', 'imageSize25']],
                   ['float', ['floatLeft', 'floatRight', 'floatNone']],
-                  ['remove', ['removeMedia']]
+                  ['remove', ['removeMedia']],
               ],
               link: [
-                  ['link', ['linkDialogShow', 'unlink']]
+                  ['link', ['linkDialogShow', 'unlink']],
               ],
               table: [
                   ['add', ['addRowDown', 'addRowUp', 'addColLeft', 'addColRight']],
-                  ['delete', ['deleteRow', 'deleteCol', 'deleteTable']]
+                  ['delete', ['deleteRow', 'deleteCol', 'deleteTable']],
               ],
               air: [
                   ['color', ['color']],
                   ['font', ['bold', 'underline', 'clear']],
                   ['para', ['ul', 'paragraph']],
                   ['table', ['table']],
-                  ['insert', ['link', 'picture']]
+                  ['insert', ['link', 'picture']],
               ]
           },
           // air mode: inline editor
@@ -7405,13 +7530,14 @@
           styleTags: [
               'p',
               { title: 'Blockquote', tag: 'blockquote', className: 'blockquote', value: 'blockquote' },
-              'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+              'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
           ],
           fontNames: [
               'Arial', 'Arial Black', 'Comic Sans MS', 'Courier New',
               'Helvetica Neue', 'Helvetica', 'Impact', 'Lucida Grande',
-              'Tahoma', 'Times New Roman', 'Verdana'
+              'Tahoma', 'Times New Roman', 'Verdana',
           ],
+          fontNamesIgnoreCheck: [],
           fontSizes: ['8', '9', '10', '11', '12', '14', '18', '24', '36'],
           // pallete colors(n x n)
           colors: [
@@ -7422,7 +7548,7 @@
               ['#E76363', '#F7AD6B', '#FFD663', '#94BD7B', '#73A5AD', '#6BADDE', '#8C7BC6', '#C67BA5'],
               ['#CE0000', '#E79439', '#EFC631', '#6BA54A', '#4A7B8C', '#3984C6', '#634AA5', '#A54A7B'],
               ['#9C0000', '#B56308', '#BD9400', '#397B21', '#104A5A', '#085294', '#311873', '#731842'],
-              ['#630000', '#7B3900', '#846300', '#295218', '#083139', '#003163', '#21104A', '#4A1031']
+              ['#630000', '#7B3900', '#846300', '#295218', '#083139', '#003163', '#21104A', '#4A1031'],
           ],
           // http://chir.ag/projects/name-that-color/
           colorsName: [
@@ -7433,8 +7559,12 @@
               ['Mandy', 'Rajah', 'Dandelion', 'Olivine', 'Gulf Stream', 'Viking', 'Blue Marguerite', 'Puce'],
               ['Guardsman Red', 'Fire Bush', 'Golden Dream', 'Chelsea Cucumber', 'Smalt Blue', 'Boston Blue', 'Butterfly Bush', 'Cadillac'],
               ['Sangria', 'Mai Tai', 'Buddha Gold', 'Forest Green', 'Eden', 'Venice Blue', 'Meteorite', 'Claret'],
-              ['Rosewood', 'Cinnamon', 'Olive', 'Parsley', 'Tiber', 'Midnight Blue', 'Valentino', 'Loulou']
+              ['Rosewood', 'Cinnamon', 'Olive', 'Parsley', 'Tiber', 'Midnight Blue', 'Valentino', 'Loulou'],
           ],
+          colorButton: {
+              foreColor: '#000000',
+              backColor: '#FFFF00'
+          },
           lineHeights: ['1.0', '1.2', '1.4', '1.5', '1.6', '1.8', '2.0', '3.0'],
           tableClassName: 'table table-bordered',
           insertTableMaxSize: {
