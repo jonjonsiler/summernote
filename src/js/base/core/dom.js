@@ -5,6 +5,8 @@ import env from './env';
 
 const NBSP_CHAR = String.fromCharCode(160);
 const ZERO_WIDTH_NBSP_CHAR = '\ufeff';
+const TABS_CONTAINER_CLASS = 'tabs-container';
+const ACCORDION_CONTAINER_CLASS = 'accordion-container';
 
 /**
  * @method isEditable
@@ -139,6 +141,16 @@ function isBodyInline(node) {
 }
 
 const isBody = makePredByNodeName('BODY');
+
+const isButton = makePredByNodeName('BUTTON');
+
+function isTab(node) {
+  return isAnchor && node.parents('.' + TABS_CONTAINER_CLASS);
+}
+
+function isAccordion(node) {
+  return isButton && node.parents('.' + ACCORDION_CONTAINER_CLASS);
+}
 
 /**
  * returns whether nodeB is closest sibling of nodeA
@@ -1043,6 +1055,9 @@ export default {
   isBlockquote,
   isBodyContainer,
   isAnchor,
+  isButton,
+  isTab,
+  isAccordion,
   isDiv: makePredByNodeName('DIV'),
   isLi,
   isBR: makePredByNodeName('BR'),

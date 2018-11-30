@@ -133,6 +133,12 @@ class WrappedRange {
     this.isOnCell = this.makeIsOn(dom.isCell);
     // isOnData: judge whether range is on data node or not
     this.isOnData = this.makeIsOn(dom.isData);
+    // isOnButton: judge whether range is on a button node or not
+    this.isOnButton = this.makeIsOn(dom.isButton);
+    // isOnAccordion: judge whether range is on a bootstrap accordion node or not
+    this.isOnAccordion = this.makeIsOn(dom.isAccordion);
+    // isOnTab: judge whether range is on a bootstrap tab node or not
+    this.isOnTab = this.makeIsOn(dom.isTab);
   }
 
   // nativeRange: get nativeRange from sc, so, ec, eo
