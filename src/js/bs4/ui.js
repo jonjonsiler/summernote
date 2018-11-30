@@ -172,6 +172,8 @@ const ui = {
           container: (options.container !== undefined) ? options.container : 'body',
           trigger: 'hover',
           placement: 'bottom',
+        }).on('click', () => {
+          $('div.tooltip[role="tooltip"]').tooltip('hide');
         });
       }
     })($node, options);
