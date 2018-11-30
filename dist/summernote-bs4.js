@@ -5,7 +5,7 @@
  * Copyright 2013- Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license.
  *
- * Date: 2018-11-30T20:49Z
+ * Date: 2018-11-30T20:57Z
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('jquery')) :
@@ -846,10 +846,10 @@
   var isBody = makePredByNodeName('BODY');
   var isButton = makePredByNodeName('BUTTON');
   function isTab(node) {
-      return isAnchor && node.parents('.' + TABS_CONTAINER_CLASS);
+      return isAnchor(node) && $$1(node).closest('.' + TABS_CONTAINER_CLASS).length;
   }
   function isAccordion(node) {
-      return isButton && node.parents('.' + ACCORDION_CONTAINER_CLASS);
+      return isButton(node) && $$1(node).closest('.' + ACCORDION_CONTAINER_CLASS).length;
   }
   /**
    * returns whether nodeB is closest sibling of nodeA
