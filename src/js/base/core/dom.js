@@ -145,11 +145,11 @@ const isBody = makePredByNodeName('BODY');
 const isButton = makePredByNodeName('BUTTON');
 
 function isTab(node) {
-  return isAnchor && node.parents('.' + TABS_CONTAINER_CLASS);
+  return isAnchor(node) && $(node).closest('.' + TABS_CONTAINER_CLASS).length;
 }
 
 function isAccordion(node) {
-  return isButton && node.parents('.' + ACCORDION_CONTAINER_CLASS);
+  return isButton(node) && $(node).closest('.' + ACCORDION_CONTAINER_CLASS).length;
 }
 
 /**
