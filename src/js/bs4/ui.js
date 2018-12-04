@@ -228,22 +228,6 @@ const ui = {
     $dialog.modal('hide');
   },
 
-  onDialogLargeShown: function($dialogLarge, handler) {
-    $dialogLarge.one('shown.bs.modal', handler);
-  },
-
-  onDialogLargeHidden: function($dialogLarge, handler) {
-    $dialogLarge.one('hidden.bs.modal', handler);
-  },
-
-  showDialogLarge: function($dialogLarge) {
-    $dialogLarge.modal('show');
-  },
-
-  hideDialogLarge: function($dialogLarge) {
-    $dialogLarge.modal('hide');
-  },
-
   createLayout: function($note, options) {
     const $editor = (options.airMode ? ui.airEditor([
       ui.editingArea([
