@@ -112,29 +112,29 @@ const dialog = renderer.create('<div class="modal" aria-hidden="false" tabindex=
 });
 
 const dialogLarge = renderer.create('<div class="modal" aria-hidden="false" tabindex="-1" role="dialog"/>', function($node, options) {
-    if (options.fade) {
-      $node.addClass('fade');
-    }
-    $node.attr({
-      'aria-label': options.title,
-    });
-    $node.html([
-      '<div class="modal-dialog modal-lg">',
-      '  <div class="modal-content">',
-      (options.title
-        ? '    <div class="modal-header">' +
-      '      <h4 class="modal-title">' + options.title + '</h4>' +
-      '      <button type="button" class="close" data-dismiss="modal" aria-label="Close" aria-hidden="true">&times;</button>' +
-      '    </div>' : ''
-      ),
-      '    <div class="modal-body">' + options.body + '</div>',
-      (options.footer
-        ? '    <div class="modal-footer">' + options.footer + '</div>' : ''
-      ),
-      '  </div>',
-      '</div>',
-    ].join(''));
+  if (options.fade) {
+    $node.addClass('fade');
+  }
+  $node.attr({
+    'aria-label': options.title,
   });
+  $node.html([
+    '<div class="modal-dialog modal-lg">',
+    '  <div class="modal-content">',
+    (options.title
+      ? '    <div class="modal-header">' +
+    '      <h4 class="modal-title">' + options.title + '</h4>' +
+    '      <button type="button" class="close" data-dismiss="modal" aria-label="Close" aria-hidden="true">&times;</button>' +
+    '    </div>' : ''
+    ),
+    '    <div class="modal-body">' + options.body + '</div>',
+    (options.footer
+      ? '    <div class="modal-footer">' + options.footer + '</div>' : ''
+    ),
+    '  </div>',
+    '</div>',
+  ].join(''));
+});
 
 const popover = renderer.create([
   '<div class="note-popover popover in">',
