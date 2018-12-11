@@ -1,7 +1,7 @@
 {
-  "name": "summernote",
-  "description": "Super simple WYSIWYG editor",
-  "version": "0.8.11",
+  "name": "@volano/summernote",
+  "description": "A fork of summernote - a super simple WYSIWYG editor",
+  "version": "0.8.11+0.0.1",
   "license": "MIT",
   "keywords": [
     "editor",
@@ -9,13 +9,13 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/summernote/summernote.git"
+    "url": "https://volano.visualstudio.com/DefaultCollection/Summernote%20Editor/_git/summernote"
   },
   "author": {
-    "name": "hackerwins",
-    "email": "<susukang98@gmail.com>"
+    "name": "Rob Yapchanyk",
+    "email": "<rob@volanosolutions.com>"
   },
-  "main": "dist/summernote.js",
+  "main": "dist/summernote-bs4.js",
   "scripts": {
     "build": "grunt build",
     "coveralls": "grunt coveralls:travis",
