@@ -62,7 +62,7 @@ function textRangeToPoint(textRange, isStart) {
 
   return {
     cont: container,
-    offset: offset
+    offset: offset,
   };
 }
 
@@ -94,7 +94,7 @@ function pointToTextRange(point) {
     return {
       node: node,
       collapseToStart: isCollapseToStart,
-      offset: offset
+      offset: offset,
     };
   };
 
@@ -133,6 +133,12 @@ class WrappedRange {
     this.isOnCell = this.makeIsOn(dom.isCell);
     // isOnData: judge whether range is on data node or not
     this.isOnData = this.makeIsOn(dom.isData);
+    // isOnButton: judge whether range is on a button node or not
+    this.isOnButton = this.makeIsOn(dom.isButton);
+    // isOnAccordion: judge whether range is on a bootstrap accordion node or not
+    this.isOnAccordion = this.makeIsOn(dom.isAccordion);
+    // isOnTab: judge whether range is on a bootstrap tab node or not
+    this.isOnTab = this.makeIsOn(dom.isTab);
   }
 
   // nativeRange: get nativeRange from sc, so, ec, eo
@@ -146,12 +152,12 @@ class WrappedRange {
     } else {
       const textRange = pointToTextRange({
         node: this.sc,
-        offset: this.so
+        offset: this.so,
       });
 
       textRange.setEndPoint('EndToEnd', pointToTextRange({
         node: this.ec,
-        offset: this.eo
+        offset: this.eo,
       }));
 
       return textRange;
@@ -163,21 +169,21 @@ class WrappedRange {
       sc: this.sc,
       so: this.so,
       ec: this.ec,
-      eo: this.eo
+      eo: this.eo,
     };
   }
 
   getStartPoint() {
     return {
       node: this.sc,
-      offset: this.so
+      offset: this.so,
     };
   }
 
   getEndPoint() {
     return {
       node: this.ec,
-      offset: this.eo
+      offset: this.eo,
     };
   }
 
@@ -401,7 +407,7 @@ class WrappedRange {
 
     const rng = this.splitText();
     const nodes = rng.nodes(null, {
-      fullyContains: true
+      fullyContains: true,
     });
 
     // find new cursor point
@@ -597,12 +603,12 @@ class WrappedRange {
     return {
       s: {
         path: dom.makeOffsetPath(editable, this.sc),
-        offset: this.so
+        offset: this.so,
       },
       e: {
         path: dom.makeOffsetPath(editable, this.ec),
-        offset: this.eo
-      }
+        offset: this.eo,
+      },
     };
   }
 
@@ -615,12 +621,12 @@ class WrappedRange {
     return {
       s: {
         path: lists.tail(dom.makeOffsetPath(lists.head(paras), this.sc)),
-        offset: this.so
+        offset: this.so,
       },
       e: {
         path: lists.tail(dom.makeOffsetPath(lists.last(paras), this.ec)),
-        offset: this.eo
-      }
+        offset: this.eo,
+      },
     };
   }
 
@@ -794,5 +800,5 @@ export default {
     const ec = dom.fromOffsetPath(lists.last(paras), bookmark.e.path);
 
     return new WrappedRange(sc, so, ec, eo);
-  }
+  },
 };

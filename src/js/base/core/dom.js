@@ -5,6 +5,8 @@ import env from './env';
 
 const NBSP_CHAR = String.fromCharCode(160);
 const ZERO_WIDTH_NBSP_CHAR = '\ufeff';
+const TABS_CONTAINER_CLASS = 'tabs-container';
+const ACCORDION_CONTAINER_CLASS = 'accordion-container';
 
 /**
  * @method isEditable
@@ -74,7 +76,7 @@ function isElement(node) {
  * @see http://www.w3.org/html/wg/drafts/html/master/syntax.html#void-elements
  */
 function isVoid(node) {
-  return node && /^BR|^IMG|^HR|^IFRAME|^BUTTON|^INPUT|^VIDEO|^EMBED/.test(node.nodeName.toUpperCase());
+  return node && /^BR|^IMG|^HR|^IFRAME|^BUTTON|^INPUT|^AUDIO|^VIDEO|^EMBED/.test(node.nodeName.toUpperCase());
 }
 
 function isPara(node) {
@@ -139,6 +141,16 @@ function isBodyInline(node) {
 }
 
 const isBody = makePredByNodeName('BODY');
+
+const isButton = makePredByNodeName('BUTTON');
+
+function isTab(node) {
+  return isAnchor(node) && $(node).closest('.' + TABS_CONTAINER_CLASS).length;
+}
+
+function isAccordion(node) {
+  return isButton(node) && $(node).closest('.' + ACCORDION_CONTAINER_CLASS).length;
+}
 
 /**
  * returns whether nodeB is closest sibling of nodeA
@@ -547,7 +559,7 @@ function prevPoint(point, isSkipInnerOffset) {
 
   return {
     node: node,
-    offset: offset
+    offset: offset,
   };
 }
 
@@ -578,7 +590,7 @@ function nextPoint(point, isSkipInnerOffset) {
 
   return {
     node: node,
-    offset: offset
+    offset: offset,
   };
 }
 
@@ -810,7 +822,7 @@ function splitTree(root, point, options) {
 
     return splitNode({
       node: parent,
-      offset: node ? position(node) : nodeLength(parent)
+      offset: node ? position(node) : nodeLength(parent),
     }, options);
   });
 }
@@ -842,7 +854,7 @@ function splitPoint(point, isInline) {
   // if splitRoot is exists, split with splitTree
   let pivot = splitRoot && splitTree(splitRoot, point, {
     isSkipPaddingBlankHTML: isInline,
-    isNotSplitEdgePoint: isInline
+    isNotSplitEdgePoint: isInline,
   });
 
   // if container is point.node, find pivot with point.offset
@@ -852,7 +864,7 @@ function splitPoint(point, isInline) {
 
   return {
     rightNode: pivot,
-    container: container
+    container: container,
   };
 }
 
@@ -984,7 +996,7 @@ function posFromPlaceholder(placeholder) {
 
   return {
     left: pos.left,
-    top: pos.top + height
+    top: pos.top + height,
   };
 }
 
@@ -1043,6 +1055,9 @@ export default {
   isBlockquote,
   isBodyContainer,
   isAnchor,
+  isButton,
+  isTab,
+  isAccordion,
   isDiv: makePredByNodeName('DIV'),
   isLi,
   isBR: makePredByNodeName('BR'),
@@ -1100,5 +1115,5 @@ export default {
   posFromPlaceholder,
   attachEvents,
   detachEvents,
-  isCustomStyleTag
+  isCustomStyleTag,
 };
