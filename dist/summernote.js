@@ -1,11 +1,11 @@
 /**
- * Super simple wysiwyg editor v0.8.11
+ * Super simple wysiwyg editor v0.8.11+0.0.1
  * https://summernote.org
  *
  * Copyright 2013- Alan Hong. and other contributors
  * summernote may be freely distributed under the MIT license.
  *
- * Date: 2018-12-04T18:54Z
+ * Date: 2018-12-11T21:59Z
  */
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('jquery')) :
@@ -6882,7 +6882,7 @@
           var $container = this.options.dialogsInBody ? this.$body : this.$editor;
           var body = [
               '<p class="text-center">',
-              '<a href="http://summernote.org/" target="_blank">Summernote 0.8.11</a> · ',
+              '<a href="http://summernote.org/" target="_blank">Summernote 0.8.11+0.0.1</a> · ',
               '<a href="https://github.com/summernote/summernote" target="_blank">Project</a> · ',
               '<a href="https://github.com/summernote/summernote/issues" target="_blank">Issues</a>',
               '</p>',
@@ -7442,7 +7442,7 @@
   });
 
   $$1.summernote = $$1.extend($$1.summernote, {
-      version: '0.8.11',
+      version: '0.8.11+0.0.1',
       ui: ui,
       dom: dom,
       range: range,
